@@ -1,0 +1,73 @@
+import os
+import shutil
+
+def list_localisation_folders(directory):
+    localisation_folders = []
+
+    for root, dirs, files in os.walk(directory):
+        for subdir in dirs:
+            if 'localisation' in subdir:
+                localisation_folders.append(os.path.abspath(os.path.join(root, subdir)))
+
+    return localisation_folders
+
+def convert_and_rename_files(listdir, path, path2):
+    for dirname in listdir:
+        if dirname.endswith('english.yml'):
+            shutil.copy2(f'{path}/{dirname}', f'{path2}/{dirname}')  
+            for filename in os.listdir(f'{path2}'):
+                os.rename(f'{path2}/{filename}', f'{path2}/{filename[:-11]}{launguage}.txt')
+
+        elif dirname.endswith('en.yml'):
+            shutil.copy2(f'{path}/{dirname}', f'{path2}/{dirname}')  
+            for filename in os.listdir(f'{path2}'):
+                os.rename(f'{path2}/{filename}', f'{path2}/{filename[:-6]}{launguage_code}.txt')
+
+        elif dirname.startswith('english') and dirname.endswith('.yml'):
+            shutil.copy2(f'{path}/{dirname}', f'{path2}/{dirname}')  
+            for filename in os.listdir(f'{path2}'):
+                os.rename(f'{path2}/{filename}', f'{path2}/{launguage}{filename[7:][:-4]}.txt')
+                
+        for filename in os.listdir(f'{path2}'):
+            with open(f'{path2}/{filename}', 'r') as f:
+                old_data = f.read()
+                new_data = old_data.replace('english', launguage, 1)
+            with open (f'{path2}/{filename}', 'w') as f:                            
+                f.write(new_data)
+            f = os.path.splitext(filename)[0] + os.path.splitext(filename)[1][:-3] + 'yml'
+            os.rename(f'{path2}/{filename}', f'{path2}/{f}')
+    return
+
+path_to_the_folder_with_mods = input('Enter the path to the mods folder ')
+list_with_paths_to_the_localisation_folders = list_localisation_folders(path_to_the_folder_with_mods)
+launguage = input('Enter your launguage ').lower()
+launguage_code = input('Enter your launguage code. Its can be fr, ru, es, is, ja, zn, and so forth. ').lower()
+
+for loc_folder in list_with_paths_to_the_localisation_folders:
+    arr = []
+    path_to_the_eng_folder = f'{loc_folder}/english'
+    list_with_files = os.listdir(loc_folder)  
+    for filename in list_with_files:
+        if filename.find('l_' + launguage_code) > -1 or filename.find(launguage) > -1 or filename.find('l_' + launguage) > -1:
+            arr.append(filename)
+    if not arr:
+        if 'english' not in list_with_files:
+            os.mkdir(f'{loc_folder}/{launguage}')
+            convert_and_rename_files(list_with_files, loc_folder, f'{loc_folder}/{launguage}')
+
+            for file in list_with_files:
+                if file == 'replace' or file == 'name_lists':
+                    os.mkdir(f'{loc_folder}/{launguage}/{file}')
+                    convert_and_rename_files(os.listdir(f'{loc_folder}/{file}'), f'{loc_folder}/{file}', f'{loc_folder}/{launguage}/{file}')
+
+        else:
+            os.mkdir(f'{loc_folder}/{launguage}')
+            convert_and_rename_files(os.listdir(path_to_the_eng_folder), path_to_the_eng_folder, f'{loc_folder}/{launguage}')
+
+            for file in os.listdir(path_to_the_eng_folder) + list_with_files:
+                if file == 'replace' or file == 'name_lists':
+                    os.mkdir(f'{loc_folder}/{launguage}/{file}')
+                    path = f'{path_to_the_eng_folder}/{file}' if file in os.listdir(path_to_the_eng_folder) else f'{loc_folder}/{file}'
+                    convert_and_rename_files(os.listdir(path), path, f'{loc_folder}/{launguage}/{file}')
+
+print('The program has finished ')
