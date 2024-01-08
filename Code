@@ -11,24 +11,24 @@ def list_localisation_folders(directory):
 
     return localisation_folders
 
-def convert_and_rename_files(listdir, path, path2):
-    for dirname in listdir:
-        if dirname.endswith('english.yml'):
-            shutil.copy2(f'{path}/{dirname}', f'{path2}/{dirname}')  
-            for filename in os.listdir(f'{path2}'):
+def convert_and_rename_files(filelist, path, path2):
+    for filename in filelist:
+        if filename.endswith('english.yml'):
+            shutil.copy2(f'{path}/{filename}', f'{path2}/{filename}')  
+            for filename in os.listdir(path2):
                 os.rename(f'{path2}/{filename}', f'{path2}/{filename[:-11]}{launguage}.txt')
 
-        elif dirname.endswith('en.yml'):
-            shutil.copy2(f'{path}/{dirname}', f'{path2}/{dirname}')  
-            for filename in os.listdir(f'{path2}'):
+        elif filename.endswith('en.yml'):
+            shutil.copy2(f'{path}/{filename}', f'{path2}/{filename}')  
+            for filename in os.listdir(path2):
                 os.rename(f'{path2}/{filename}', f'{path2}/{filename[:-6]}{launguage_code}.txt')
 
-        elif dirname.startswith('english') and dirname.endswith('.yml'):
-            shutil.copy2(f'{path}/{dirname}', f'{path2}/{dirname}')  
-            for filename in os.listdir(f'{path2}'):
+        elif filename.startswith('english') and filename.endswith('.yml'):
+            shutil.copy2(f'{path}/{filename}', f'{path2}/{filename}')  
+            for filename in os.listdir(path2):
                 os.rename(f'{path2}/{filename}', f'{path2}/{launguage}{filename[7:][:-4]}.txt')
                 
-        for filename in os.listdir(f'{path2}'):
+        for filename in os.listdir(path2):
             with open(f'{path2}/{filename}', 'r') as f:
                 old_data = f.read()
                 new_data = old_data.replace('english', launguage, 1)
@@ -48,20 +48,12 @@ for loc_folder in list_with_paths_to_the_localisation_folders:
     path_to_the_eng_folder = f'{loc_folder}/english'
     list_with_files = os.listdir(loc_folder)  
     for filename in list_with_files:
-        if filename.find('l_' + launguage_code) > -1 or filename.find(launguage) > -1 or filename.find('l_' + launguage) > -1:
+        if filename.find('l_' + launguage_code) > -1 or filename.find(launguage) > -1:
             arr.append(filename)
-    if not arr:
-        if 'english' not in list_with_files:
-            os.mkdir(f'{loc_folder}/{launguage}')
-            convert_and_rename_files(list_with_files, loc_folder, f'{loc_folder}/{launguage}')
+    if arr == []:
+        os.mkdir(f'{loc_folder}/{launguage}')
 
-            for file in list_with_files:
-                if file == 'replace' or file == 'name_lists':
-                    os.mkdir(f'{loc_folder}/{launguage}/{file}')
-                    convert_and_rename_files(os.listdir(f'{loc_folder}/{file}'), f'{loc_folder}/{file}', f'{loc_folder}/{launguage}/{file}')
-
-        else:
-            os.mkdir(f'{loc_folder}/{launguage}')
+        if 'english' in list_with_files:
             convert_and_rename_files(os.listdir(path_to_the_eng_folder), path_to_the_eng_folder, f'{loc_folder}/{launguage}')
 
             for file in os.listdir(path_to_the_eng_folder) + list_with_files:
@@ -69,5 +61,13 @@ for loc_folder in list_with_paths_to_the_localisation_folders:
                     os.mkdir(f'{loc_folder}/{launguage}/{file}')
                     path = f'{path_to_the_eng_folder}/{file}' if file in os.listdir(path_to_the_eng_folder) else f'{loc_folder}/{file}'
                     convert_and_rename_files(os.listdir(path), path, f'{loc_folder}/{launguage}/{file}')
+
+        else:
+            convert_and_rename_files(list_with_files, loc_folder, f'{loc_folder}/{launguage}')
+
+            for file in list_with_files:
+                if file == 'replace' or file == 'name_lists':
+                    os.mkdir(f'{loc_folder}/{launguage}/{file}')
+                    convert_and_rename_files(os.listdir(f'{loc_folder}/{file}'), f'{loc_folder}/{file}', f'{loc_folder}/{launguage}/{file}')
 
 print('The program has finished ')
