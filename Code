@@ -1,3 +1,4 @@
+#python 3.10.8
 import os
 import shutil
 
@@ -11,22 +12,22 @@ def list_localisation_folders(directory):
 
     return localisation_folders
 
-def convert_and_rename_files(filelist, path, path2):
+def copy_and_rename_files(filelist, path, path2): # -> None
     for filename in filelist:
         if filename.endswith('english.yml'):
             shutil.copy2(f'{path}/{filename}', f'{path2}/{filename}')  
             for filename in os.listdir(path2):
-                os.rename(f'{path2}/{filename}', f'{path2}/{filename[:-11]}{launguage}.txt')
+                os.rename(f'{path2}/{filename}', f'{path2}/{os.path.splitext(filename)[0][:-7]}{launguage}{os.path.splitext(filename)[1]}')
 
         elif filename.endswith('en.yml'):
             shutil.copy2(f'{path}/{filename}', f'{path2}/{filename}')  
             for filename in os.listdir(path2):
-                os.rename(f'{path2}/{filename}', f'{path2}/{filename[:-6]}{launguage_code}.txt')
+                os.rename(f'{path2}/{filename}', f'{path2}/{os.path.splitext(filename)[0][:-2]}{launguage_code}{os.path.splitext(filename)[1]}')
 
         elif filename.startswith('english') and filename.endswith('.yml'):
             shutil.copy2(f'{path}/{filename}', f'{path2}/{filename}')  
             for filename in os.listdir(path2):
-                os.rename(f'{path2}/{filename}', f'{path2}/{launguage}{filename[7:][:-4]}.txt')
+                os.rename(f'{path2}/{filename}', f'{path2}/{launguage}{filename[7:]}{os.path.splitext(filename)[1]}')
                 
         for filename in os.listdir(path2):
             with open(f'{path2}/{filename}', 'r') as f:
@@ -34,19 +35,19 @@ def convert_and_rename_files(filelist, path, path2):
                 new_data = old_data.replace('english', launguage, 1)
             with open (f'{path2}/{filename}', 'w') as f:                            
                 f.write(new_data)
-            f = os.path.splitext(filename)[0] + os.path.splitext(filename)[1][:-3] + 'yml'
-            os.rename(f'{path2}/{filename}', f'{path2}/{f}')
+                
     return
 
 path_to_the_folder_with_mods = input('Enter the path to the mods folder ')
 list_with_paths_to_the_localisation_folders = list_localisation_folders(path_to_the_folder_with_mods)
-launguage = input('Enter your launguage ').lower()
-launguage_code = input('Enter your launguage code. Its can be fr, ru, es, is, ja, zn, and so forth. ').lower()
+launguage = input('Enter your language (examples: japanese, russian, french, german, spanish, polish, braz_por, simp_chinese, korean) ').lower()
+launguage_code = input('Enter your language code (examples: ja, ru, fr, de, es, pl, pt-BR, zh, ko) ').lower()
 
 for loc_folder in list_with_paths_to_the_localisation_folders:
     arr = []
     path_to_the_eng_folder = f'{loc_folder}/english'
     list_with_files = os.listdir(loc_folder)  
+    en_listdir = os.listdir(path_to_the_eng_folder)
     for filename in list_with_files:
         if filename.find('l_' + launguage_code) > -1 or filename.find(launguage) > -1:
             arr.append(filename)
@@ -54,20 +55,20 @@ for loc_folder in list_with_paths_to_the_localisation_folders:
         os.mkdir(f'{loc_folder}/{launguage}')
 
         if 'english' in list_with_files:
-            convert_and_rename_files(os.listdir(path_to_the_eng_folder), path_to_the_eng_folder, f'{loc_folder}/{launguage}')
+            copy_and_rename_files(en_listdir, path_to_the_eng_folder, f'{loc_folder}/{launguage}')
 
-            for file in os.listdir(path_to_the_eng_folder) + list_with_files:
+            for file in en_listdir + list_with_files:
                 if file == 'replace' or file == 'name_lists':
                     os.mkdir(f'{loc_folder}/{launguage}/{file}')
-                    path = f'{path_to_the_eng_folder}/{file}' if file in os.listdir(path_to_the_eng_folder) else f'{loc_folder}/{file}'
-                    convert_and_rename_files(os.listdir(path), path, f'{loc_folder}/{launguage}/{file}')
+                    path = f'{path_to_the_eng_folder}/{file}' if file in en_listdir else f'{loc_folder}/{file}'
+                    copy_and_rename_files(os.listdir(path), path, f'{loc_folder}/{launguage}/{file}')
 
         else:
-            convert_and_rename_files(list_with_files, loc_folder, f'{loc_folder}/{launguage}')
+            copy_and_rename_files(list_with_files, loc_folder, f'{loc_folder}/{launguage}')
 
             for file in list_with_files:
                 if file == 'replace' or file == 'name_lists':
                     os.mkdir(f'{loc_folder}/{launguage}/{file}')
-                    convert_and_rename_files(os.listdir(f'{loc_folder}/{file}'), f'{loc_folder}/{file}', f'{loc_folder}/{launguage}/{file}')
+                    copy_and_rename_files(os.listdir(f'{loc_folder}/{file}'), f'{loc_folder}/{file}', f'{loc_folder}/{launguage}/{file}')
 
 print('The program has finished ')
