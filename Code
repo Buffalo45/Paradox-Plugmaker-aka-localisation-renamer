@@ -1,4 +1,4 @@
-#python 3.10.8
+#python 3.12.1
 
 import os
 import shutil
@@ -15,28 +15,23 @@ def list_localisation_folders(directory):
 
 def copy_and_rename_files(filelist, path, path2): # -> None
     for filename in filelist:
-        if filename.endswith('english.yml'):
+        if filename.endswith('.yml'):
             shutil.copy2(f'{path}/{filename}', f'{path2}/{filename}')  
-            for filename in os.listdir(path2):
-                os.rename(f'{path2}/{filename}', f'{path2}/{os.path.splitext(filename)[0][:-7]}{launguage}{os.path.splitext(filename)[1]}')
 
-        elif filename.endswith('en.yml'):
-            shutil.copy2(f'{path}/{filename}', f'{path2}/{filename}')  
-            for filename in os.listdir(path2):
-                os.rename(f'{path2}/{filename}', f'{path2}/{os.path.splitext(filename)[0][:-2]}{launguage_code}{os.path.splitext(filename)[1]}')
+            if 'english' in filename:
+                new_filename = filename.replace('english', launguage)
 
-        elif filename.startswith('english') and filename.endswith('.yml'):
-            shutil.copy2(f'{path}/{filename}', f'{path2}/{filename}')  
+            elif 'l_en' in filename:
+                new_filename = filename.replace('l_en', 'l_' + launguage_code)
+
+            os.rename(f'{path2}/{filename}', f'{path2}/{new_filename}')
+
             for filename in os.listdir(path2):
-                os.rename(f'{path2}/{filename}', f'{path2}/{launguage}{os.path.splitext(filename)[0][7:]}{os.path.splitext(filename)[1]}')
-                
-        for filename in os.listdir(path2):
-            with open(f'{path2}/{filename}', 'r') as f:
-                old_data = f.read()
-                new_data = old_data.replace('english', launguage, 1)
-            with open (f'{path2}/{filename}', 'w') as f:                            
-                f.write(new_data)
-                
+                with open(f'{path2}/{filename}', 'r') as f:
+                    old_data = f.read()
+                    new_data = old_data.replace('english', launguage, 1)
+                with open (f'{path2}/{filename}', 'w') as f:                            
+                    f.write(new_data)
     return
 
 path_to_the_folder_with_mods = input('Enter the path to the mods folder ')
@@ -49,6 +44,7 @@ for loc_folder in list_with_paths_to_the_localisation_folders:
     path_to_the_eng_folder = f'{loc_folder}/english'
     list_with_files = os.listdir(loc_folder)  
     en_listdir = os.listdir(path_to_the_eng_folder) if 'english' in list_with_files else None
+
     for filename in list_with_files:
         if filename.find('l_' + launguage_code) > -1 or filename.find(launguage) > -1:
             arr.append(filename)
