@@ -28,7 +28,7 @@ def copy_and_rename_files(filelist, path, path2): # -> None
         elif filename.startswith('english') and filename.endswith('.yml'):
             shutil.copy2(f'{path}/{filename}', f'{path2}/{filename}')  
             for filename in os.listdir(path2):
-                os.rename(f'{path2}/{filename}', f'{path2}/{launguage}{filename[7:]}{os.path.splitext(filename)[1]}')
+                os.rename(f'{path2}/{filename}', f'{path2}/{launguage}{os.path.splitext(filename)[0][7:]}{os.path.splitext(filename)[1]}')
                 
         for filename in os.listdir(path2):
             with open(f'{path2}/{filename}', 'r') as f:
@@ -48,7 +48,7 @@ for loc_folder in list_with_paths_to_the_localisation_folders:
     arr = []
     path_to_the_eng_folder = f'{loc_folder}/english'
     list_with_files = os.listdir(loc_folder)  
-    en_listdir = os.listdir(path_to_the_eng_folder)
+    en_listdir = os.listdir(path_to_the_eng_folder) if 'english' in list_with_files else None
     for filename in list_with_files:
         if filename.find('l_' + launguage_code) > -1 or filename.find(launguage) > -1:
             arr.append(filename)
