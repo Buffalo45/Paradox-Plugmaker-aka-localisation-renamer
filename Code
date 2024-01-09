@@ -1,7 +1,7 @@
 #python 3.12.1
 
 import os
-import shutil
+from shutil import copy2
 
 def list_localisation_folders(directory):
     localisation_folders = []
@@ -16,7 +16,7 @@ def list_localisation_folders(directory):
 def copy_and_rename_files(filelist, path, path2): # -> None
     for filename in filelist:
         if filename.endswith('.yml'):
-            shutil.copy2(f'{path}/{filename}', f'{path2}/{filename}')  
+            copy2(f'{path}/{filename}', f'{path2}/{filename}')  
 
             if 'english' in filename:
                 new_filename = filename.replace('english', launguage)
